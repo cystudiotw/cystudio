@@ -1,0 +1,7 @@
+---
+// JSON-LD 輸出元件：<script type="application/ld+json">
+// 把 `<` 跳脫成 \u003c，避免內容含 </script> 時破壞 HTML
+const { data } = Astro.props;
+const json = data ? JSON.stringify(data).replace(/</g, '\\u003c') : '';
+---
+{data && <script type="application/ld+json" set:html={json} />}

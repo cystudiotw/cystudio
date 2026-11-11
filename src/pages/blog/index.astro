@@ -1,0 +1,29 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPosts, clean, excerptOf, routeSlug } from '../../lib/wordpress.js';
+import { collectionSchema, breadcrumbSchema, siteUrl } from '../../lib/schema.js';
+let posts = [];
+try { posts = await getPosts(); } catch (error) { console.warn(error.message); }
+const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const description = '雲橙工作室部落格：WordPress、WooCommerce、客製系統開發、網站維運與 SEO／AEO 優化的實戰經驗分享。';
+---
+<Base title="部落格 - 雲橙網頁設計工作室" description={description} active="部落格" jsonLd={[
+  collectionSchema({
+    title: '雲橙工作室部落格',
+    description,
+    url: pageUrl,
+    items: posts.map((post) => ({ name: clean(post.title?.rendered), url: `${siteUrl}/blog/${routeSlug(post.slug)}/` })),
+  }),
+  breadcrumbSchema([
+    { name: '首頁', url: `${siteUrl}/` },
+    { name: '部落格', url: `${siteUrl}/blog/` },
+  ]),
+]}>
+  <section class="blog-archive">
+    <div class="breadcrumbs"><a href="/">首頁</a><span>/</span><a href="/blog" class="active">部落格</a></div>
+    {posts.length ? <div class="post-list">{posts.map((post) => <article class="post-summary"><h2><a href={`/blog/${routeSlug(post.slug)}/`} set:html={post.title?.rendered}/></h2><p>{excerptOf(post)}</p><a class="read-more" href={`/blog/${routeSlug(post.slug)}/`}>閱讀更多 »</a></article>)}</div> : <div class="empty">目前沒有文章。</div>}
+  </section>
+</Base>
+<style>
+.blog-archive{max-width:1180px;min-height:50vh;margin:0 auto;padding:100px 20px 55px}.breadcrumbs{display:flex;gap:12px;color:#777;font-size:14px;margin-bottom:28px}.breadcrumbs a:hover,.breadcrumbs>:last-child{color:var(--orange)}.post-list{display:grid;grid-template-columns:1fr;gap:35px}.post-summary{padding:0 0 24px;border-bottom:1px solid #eee}.post-summary h2{margin:0 0 12px;font-size:24px;line-height:1.45}.post-summary h2 a:hover,.read-more:hover{color:var(--orange)}.post-meta{display:flex;gap:18px;margin-bottom:15px;color:#888;font-size:13px}.post-summary p{margin:0 0 8px;line-height:1.8;color:#555}.read-more{font-size:14px;color:var(--orange)}@media(max-width:767px){.blog-archive{padding:85px 20px 40px}.post-summary h2{font-size:20px}}
+</style>

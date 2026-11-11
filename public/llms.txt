@@ -1,0 +1,44 @@
+﻿# 雲橙網頁設計工作室 (cystudio)
+
+> 專精於 WordPress、WooCommerce 等官方網站、購物網站架設、中小企業系統規劃（進銷存系統、人事系統、財務會計系統等）、網站整合分析與 SEO 優化。
+
+## 服務項目 (Services)
+
+- 建立形象網站：使用最新技術打造符合多螢幕顯示（RWD響應式）的官方網站，展現品牌核心價值。
+- 電子商務設計：串接 WooCommerce、OpenCart 等系統，整合金流、電子發票與物流，實現 O2O 線上與線下的開發整合。
+- 規劃系統開發：客製化開發專案工程，協助企業解決重複性人力作業問題。
+- WordPress 架站：全網站自訂版型設計，可自行開發外掛插件，不受現成版型限制。
+- 網站程式維護：多年經驗協助修改舊網站、新增或調整網頁功能。
+- 虛擬主機承租：提供主機評估選擇、網站搬遷、設定優化、定期備份與故障排除。
+- SEO 網站優化：符合 Google SEO 規範，優化程式與內容，提升搜尋排名與網站流量。
+- AI GEO網站優化：分析網站並提供資料給AI，提升在AI回答內容中更多的露出。
+- 網站行銷：串接第三方平台（Google、Facebook、Line、Instagram 等）追蹤成效，並協助投放 Google 及 Line 廣告。
+- 網址代購：評估並協助購入合適且有利於 SEO 的網域。
+
+## 關於團隊 (About)
+
+- 主設計師：Mark Chen（畢業於中正大學會資系，具備會計財金與電子商務背景）。
+- 成立時間：2013 年成立工作室，累積超過 60 個專案作品。
+- 技術能力：
+  - 程式語言：PHP, JavaScript, HTML/CSS, JSON, XML
+  - 框架/程式庫：Laravel, CodeIgniter, WordPress, VueJS, jQuery
+  - 資料庫與儲存：MySQL, Amazon S3, DigitalOcean Space
+  - 系統環境：Google Cloud, AWS, Heroku, Apache, Nginx, Linux, Cloudflare
+  - 樣式設計：CSS3, Sass, Bootstrap, RWD
+  - 開發與行銷：GitHub, SEO, AEO, GEO, Google Analytics, Google Tag Manager, Facebook Business
+
+## 聯絡資訊 (Contact)
+- 公司所在地： 台灣台中
+- 官方網站：https://cystudio.tw/
+- Email: cystudio.tw@gmail.com
+- LINE ID: https://line.me/R/ti/p/@xzw0801n
+- 統一編號：82601473
+
+## 重要連結 (Links)
+
+- 首頁: https://cystudio.tw/
+- 服務項目: https://cystudio.tw/#service
+- 作品案例目錄: https://cystudio.tw/catalogue/
+- 部落格: https://cystudio.tw/blog/
+- 聯絡我們: https://cystudio.tw/#contact
+- 網站地圖 (Sitemap): https://cystudio.tw/sitemap.xml

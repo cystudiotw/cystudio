@@ -1,0 +1,23 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectArchive from '../../components/ProjectArchive.astro';
+import { getCatalogues, getProjects, termsOf, clean, routeSlug } from '../../lib/wordpress.js';
+import { collectionSchema, breadcrumbSchema, siteUrl } from '../../lib/schema.js';
+export async function getStaticPaths(){const terms=await getCatalogues().catch(()=>[]);return terms.map(term=>({params:{slug:routeSlug(term.slug)},props:{term}}));}
+const {term}=Astro.props;const catalogues=await getCatalogues().catch(()=>[]);const projects=(await getProjects().catch(()=>[])).filter(project=>termsOf(project,'catalogue').some(item=>item.id===term.id));
+const pageUrl=new URL(Astro.url.pathname, Astro.site).toString();
+const description=`${term.name}作品案例（${projects.length} 件）：${projects.slice(0,5).map((project)=>clean(project.title?.rendered)).join('、')}等的網站設計與系統開發實績。`;
+---
+<Base title={`${term.name} 網站設計案例｜雲橙工作室`} description={description} active="作品案例" jsonLd={[
+  collectionSchema({
+    title: `${term.name}作品案例｜雲橙工作室`,
+    description,
+    url: pageUrl,
+    items: projects.map((project) => ({ name: clean(project.title?.rendered), url: `${siteUrl}/project/${project.slug}/` })),
+  }),
+  breadcrumbSchema([
+    { name: '首頁', url: `${siteUrl}/` },
+    { name: '作品案例', url: `${siteUrl}/catalogue/` },
+    { name: term.name, url: pageUrl },
+  ]),
+]}><ProjectArchive projects={projects} catalogues={catalogues} selected={term} /></Base>

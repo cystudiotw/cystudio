@@ -1,0 +1,51 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPosts, getPost, clean, excerptOf, termsOf, imageOf, routeSlug, webpOf, withWebp } from '../../lib/wordpress.js';
+import { articleSchema, breadcrumbSchema, siteUrl } from '../../lib/schema.js';
+export async function getStaticPaths(){const posts=await getPosts().catch(()=>[]);return posts.map(post=>({params:{slug:routeSlug(post.slug)},props:{post}}));}
+const { slug }=Astro.params; const post=Astro.props.post || await getPost(slug).catch(()=>null);
+if (!post) return Astro.redirect('/404/');
+const cats=termsOf(post,'category');
+const title=clean(post.title?.rendered);
+const cover=imageOf(post); const coverWebp=webpOf(cover);
+const description=excerptOf(post, 160);
+const pageUrl=new URL(Astro.url.pathname, Astro.site).toString();
+const ogImage=cover || `${siteUrl}/images/og-image.jpg`;
+---
+<Base title={`${title}｜雲橙工作室`} description={description} active="部落格" type="article" image={cover} jsonLd={[
+  articleSchema({ title, description, url: pageUrl, image: ogImage, published: post.date, modified: post.modified, keywords: cats.map((cat) => cat.name) }),
+  breadcrumbSchema([
+    { name: '首頁', url: `${siteUrl}/` },
+    { name: '部落格', url: `${siteUrl}/blog/` },
+    { name: title, url: pageUrl },
+  ]),
+]}>
+  <article class="post-page">
+    <nav class="breadcrumbs" aria-label="breadcrumb">
+      <a href="/">首頁</a><span>/</span><a href="/blog/">部落格</a><span>/</span><span class="current">{title}</span>
+    </nav>
+    <h1 class="post-title" set:html={post.title?.rendered}/>
+    {cats.length > 0 && <div class="post-meta">
+      {cats.map(cat=><a href={`/category/${routeSlug(cat.slug)}/`}># {cat.name}</a>)}
+    </div>}
+    {cover && <picture>{coverWebp && <source srcset={coverWebp} type="image/webp"/>}<img class="cover" src={cover} alt={title}/></picture>}
+    <div class="article-body" set:html={withWebp(post.content?.rendered)}/>
+  </article>
+</Base>
+<style>
+  .post-page{max-width:1180px;min-height:50vh;margin:0 auto;padding:100px 20px 55px}
+  .breadcrumbs{display:flex;gap:12px;color:#777;font-size:14px;margin-bottom:28px}
+  .breadcrumbs a:hover,.breadcrumbs>:last-child{color:var(--orange)}
+  .breadcrumbs .current{min-width:0;max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .post-meta{display:flex;flex-wrap:wrap;gap:16px;color:#888;font-size:13px;margin-bottom:24px}
+  .post-meta a:hover{color:var(--orange)}
+  .post-title{margin:0 0 8px;font-size:36px;line-height:1.45;color:var(--ink)}
+  .cover{display:block;width:100%;max-height:540px;object-fit:cover;margin:0 0 30px}
+  .article-body{font-size:17px;line-height:2;color:#343434;overflow-wrap:anywhere}
+  .article-body img{max-width:100%;height:auto}
+  .article-body h2,.article-body h3{color:#171717;line-height:1.5;margin-top:2em}
+  .article-body a{color:#c47a00;text-decoration:underline}
+  .back{display:inline-block;margin-top:36px;font-size:14px;color:var(--orange)}
+  .back:hover{color:#e69512}
+  @media(max-width:767px){.post-page{padding:85px 20px 40px}.post-title{font-size:26px}.breadcrumbs .current{max-width:60vw}}
+</style>

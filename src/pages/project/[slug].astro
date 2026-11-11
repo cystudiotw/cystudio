@@ -1,0 +1,74 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getProjects, getProject, termsOf, clean, routeSlug, withWebp, briefOf, urlOf, thumbOf } from '../../lib/wordpress.js';
+import { creativeWorkSchema, breadcrumbSchema, siteUrl } from '../../lib/schema.js';
+export async function getStaticPaths(){const projects=await getProjects().catch(()=>[]);return projects.map(project=>({params:{slug:project.slug},props:{project}}));}
+const {slug}=Astro.params; const project=Astro.props.project || await getProject(slug).catch(()=>null);
+if (!project) return Astro.redirect('/404/');
+const categories=termsOf(project,'catalogue');
+const title=clean(project.title?.rendered);
+const brief=briefOf(project);
+const url=urlOf(project);
+const first=categories[0];
+const description=clean(brief).slice(0,160) || undefined;
+const thumb=thumbOf(project);
+const ogImage=thumb || `${siteUrl}/images/og-image.jpg`;
+const pageUrl=new URL(Astro.url.pathname, Astro.site).toString();
+const crumbItems=[
+  { name: '首頁', url: `${siteUrl}/` },
+  { name: '作品案例', url: `${siteUrl}/catalogue/` },
+  ...(first ? [{ name: first.name, url: `${siteUrl}/catalogue/${routeSlug(first.slug)}/` }] : []),
+  { name: title, url: pageUrl },
+];
+---
+<Base title={`${title}｜作品案例｜雲橙工作室`} description={description} active="作品案例" image={thumb} jsonLd={[
+  creativeWorkSchema({ title, description, url: pageUrl, image: ogImage, published: project.date, modified: project.modified, keywords: categories.map((term) => term.name) }),
+  breadcrumbSchema(crumbItems),
+]}>
+  <article class="project-page">
+    <nav class="breadcrumbs" aria-label="breadcrumb">
+      <a href="/">首頁</a><span>/</span><a href="/catalogue/">作品案例</a>
+      {first && <><span>/</span><a href={`/catalogue/${routeSlug(first.slug)}/`}>{first.name}</a></>}
+      <span>/</span><span class="current">{title}</span>
+    </nav>
+    <div class="project-layout">
+      <div class="project-media article-body" set:html={withWebp(project.content?.rendered)}/>
+      <aside class="project-side">
+        <h1 class="project-title" set:html={project.title?.rendered}/>
+        <div class="project-divider"/>
+        {categories.length>0 && <div class="project-terms">{categories.map(term=><span><a href={`/catalogue/${routeSlug(term.slug)}/`}># {term.name}</a></span>)}</div>}
+        {brief && <div class="project-brief" set:html={brief}/>}
+        {url && <a class="project-link" href={url} target="_blank" rel="nofollow noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.9 12a3.1 3.1 0 0 1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 0 1 0 6.2h-4V17h4a5 5 0 0 0 0-10z"/></svg>{title}</a>}
+      </aside>
+    </div>
+  </article>
+</Base>
+<style>
+  /* 版面寬度與 breadcrumb 比照 blog 頁；兩欄比例與右欄板塊比照 cystudio.tw/project 範本 */
+  .project-page{max-width:1180px;min-height:50vh;margin:0 auto;padding:100px 20px 55px}
+  .breadcrumbs{display:flex;gap:12px;color:#777;font-size:14px;margin-bottom:28px}
+  .breadcrumbs a:hover,.breadcrumbs>:last-child{color:var(--orange)}
+  .breadcrumbs .current{min-width:0;max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .project-layout{display:grid;grid-template-columns:75% 25%}
+  .project-media{align-self:start;background:#efefef;padding:20px}
+  .project-side{margin-top:-45px;padding-left:28px}
+  .project-title{margin:0 0 6px;font-size:26px;font-weight:600;line-height:1.5;color:var(--ink)}
+  .project-divider{height:1px;background:#efefef;margin:0 0 15px}
+  .project-terms{display:flex;flex-wrap:wrap;gap:6px 10px;margin:0 0 30px;font-size:13px;color:#777}
+  .project-terms a{color:var(--orange)}
+  .project-terms a:hover{color:#ffc15a}
+  .project-brief{margin-bottom:30px;font-size:14px;line-height:1.9;color:#555;overflow-wrap:anywhere}
+  .project-brief :global(ul){margin:10px 0 0;padding-left:1.2em}
+  .project-brief :global(li){margin:6px 0}
+  .project-link{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;line-height:1.5;color:var(--orange)}
+  .project-link:hover{color:#ffc15a;text-decoration:underline}
+  .project-link svg{width:14px;height:14px;fill:currentColor;flex:none}
+  @media(min-width:768px) and (max-width:1024px){.project-layout{grid-template-columns:65% 35%}.project-side{padding-left:10px}}
+  @media(max-width:767px){
+    .project-page{padding:85px 20px 40px}
+    .project-layout{display:flex;flex-direction:column-reverse}
+    .project-side{margin-top:0;padding-left:0;padding-bottom:20px}
+    .project-media{padding:10px}
+    .breadcrumbs .current{max-width:60vw}
+  }
+</style>

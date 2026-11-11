@@ -1,0 +1,19 @@
+{
+  "name": "cystudio-astro",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "prebuild": "node scripts/generate-webp.mjs",
+    "webp": "node scripts/generate-webp.mjs",
+    "og": "node scripts/generate-og.mjs",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^7.4.7"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
+  }
+}

@@ -1,0 +1,6 @@
+# robots.txt for https://cystudio.tw
+User-agent: *
+Allow: /
+
+# ── Sitemap ──
+Sitemap: https://cystudio.tw/sitemap.xml

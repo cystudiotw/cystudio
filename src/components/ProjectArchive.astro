@@ -1,0 +1,18 @@
+---
+import { thumbOf, webpOf, clean } from '../lib/wordpress.js';
+const { projects = [], catalogues = [], selected = null } = Astro.props;
+---
+<section class="archive-layout">
+  <aside class="archive-sidebar">
+    <h2>作品分類</h2>
+    <nav aria-label="作品分類">{catalogues.map((term) => <a class:list={{ active: selected?.id === term.id }} href={`/catalogue/${term.slug}/`}>{term.name}</a>)}</nav>
+  </aside>
+  <div class="archive-main">
+    <div class="breadcrumbs"><a href="/">首頁</a><span>/</span><a href="/catalogue/">作品分類</a>{selected && <><span>/</span><span>{selected.name}</span></>}</div>
+    <h1>{selected?.name || '作品分類'}</h1>
+    {projects.length ? <div class="work-cards">{projects.map((project) => { const image = thumbOf(project); const webp = webpOf(image); const title = clean(project.title?.rendered); return <a class="work-card" href={`/project/${project.slug}/`}>{image && <picture>{webp && <source srcset={webp} type="image/webp"/>}<img src={image} alt={title} loading="lazy"/></picture>}<h2 set:html={project.title?.rendered}/></a>; })}</div> : <p class="empty">目前沒有作品。</p>}
+  </div>
+</section>
+<style>
+.archive-layout{max-width:1180px;min-height:50vh;margin:0 auto;padding:100px 20px 55px;display:grid;grid-template-columns:25% 75%;gap:0}.archive-sidebar{padding:0 20px 0 0}.archive-sidebar h2{font-size:1.6rem;font-weight:600;line-height:1.5;margin:0 0 14px}.archive-sidebar nav{display:flex;flex-direction:column;gap:16px;padding-top:15px;border-top:1px solid #efefef}.archive-sidebar a{font-size:15px;line-height:1.5;color:#333}.archive-sidebar a:hover,.archive-sidebar a.active{color:var(--orange)}.archive-main{padding:0 0 0 20px}.breadcrumbs{display:flex;gap:10px;color:#777;font-size:13px;margin-bottom:20px}.breadcrumbs a:hover,.breadcrumbs>:last-child{color:var(--orange)}.archive-main h1{font-size:28px;font-weight:600;margin:0 0 24px}.work-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:25px}.work-card{display:block;color:#333}.work-card img{display:block;width:100%;aspect-ratio:1.515;object-fit:cover;border-radius:10px}.work-card h2{margin:0;padding:7px 0 0;font-size:16px;font-weight:500;line-height:1.4}.work-card:hover h2{color:var(--orange)}.empty{color:#777}@media(max-width:767px){.archive-layout{padding:85px 20px 40px;grid-template-columns:1fr;gap:25px}.archive-sidebar{padding:0}.archive-sidebar nav{flex-direction:row;flex-wrap:wrap;gap:12px 20px}.archive-main{padding:0}.work-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.archive-main h1{font-size:24px}}@media(max-width:420px){.work-cards{gap:12px}.work-card h2{font-size:14px}}
+</style>
