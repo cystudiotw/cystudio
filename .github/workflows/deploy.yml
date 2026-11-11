@@ -33,8 +33,9 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # DNS 將 cystudio.tw 指到 GitHub Pages 後，WP 搬家到新位址時，
-          # 在 repo Settings → Secrets and variables → Actions → Variables 設 WP_URL
+          # 預設已指向 wp.cystudio.tw（wordpress.js 的 fallback）。
+          # 未來 WP 再搬家時，在 repo Settings → Secrets and variables → Actions →
+          # Variables 新增 WP_URL 即可，程式不用改。
           WP_URL: ${{ vars.WP_URL }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

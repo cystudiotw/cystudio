@@ -1,4 +1,5 @@
-const root = (import.meta.env.WP_URL || 'https://cystudio.tw').replace(/\/$/, '');
+// WP 已搬家至 wp.cystudio.tw（cystudio.tw 現為 GitHub Pages 前端）
+const root = (import.meta.env.WP_URL || 'https://wp.cystudio.tw').replace(/\/$/, '');
 export const projectType = import.meta.env.WP_PROJECT_TYPE || 'project';
 export const projectTaxonomy = import.meta.env.WP_PROJECT_TAXONOMY || 'catalogue';
 
