@@ -1,10 +1,10 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { getCategories, getPosts, clean, excerptOf, dateOf, routeSlug } from '../../lib/wordpress.js';
+import { getCategories, getPosts, clean, excerptOf, dateOf, routeSlug, tryOr } from '../../lib/wordpress.js';
 import { collectionSchema, breadcrumbSchema, siteUrl } from '../../lib/schema.js';
-export async function getStaticPaths(){const categories=await getCategories().catch(()=>[]);return categories.map(category=>({params:{slug:routeSlug(category.slug)},props:{category}}));}
-const {category}=Astro.props;let posts=[];
-try{posts=(await getPosts()).filter(post=>(post.categories||[]).includes(category.id));}catch{}
+export async function getStaticPaths(){const categories=await tryOr(getCategories(), []);return categories.map(category=>({params:{slug:routeSlug(category.slug)},props:{category}}));}
+const {category}=Astro.props;
+const posts=(await tryOr(getPosts(), [])).filter(post=>(post.categories||[]).includes(category.id));
 const pageUrl=new URL(Astro.url.pathname, Astro.site).toString();
 const description=`${category.name}分類的文章（${posts.length} 篇）：雲橙工作室的網站開發、系統設計與 SEO 實戰分享。`;
 ---

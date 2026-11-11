@@ -14,6 +14,13 @@ async function api(path) {
 // 僅 build 生效（import.meta.env.PROD）；dev 每次請求都抓最新，方便即時預覽 WP 變更
 const buildCache = import.meta.env.PROD ? new Map() : null;
 
+// PROD build（CI）抓 WP 失敗時直接讓 build 失敗 —— 寧可部署停住，也不能上線空站；
+// dev 才退回預設值（不讓 WP 暫時連不上就整站報錯）
+export function tryOr(promise, fallback) {
+  if (import.meta.env.PROD) return promise; // 錯誤原樣拋出，由 Astro build 中止
+  return promise.catch(() => fallback);
+}
+
 async function all(path) {
   if (buildCache?.has(path)) return buildCache.get(path);
   const items = [];

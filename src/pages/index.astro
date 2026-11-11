@@ -1,9 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
-import { getProjects, getCatalogues, termsOf, thumbOf, clean, webpOf } from '../lib/wordpress.js';
-let projects = [];
-try { projects = await getProjects(); } catch (error) { console.warn(error.message); }
-const catalogues = await getCatalogues().catch(() => []);
+import { getProjects, getCatalogues, termsOf, thumbOf, clean, webpOf, tryOr } from '../lib/wordpress.js';
+const projects = await tryOr(getProjects(), []);
+const catalogues = await tryOr(getCatalogues(), []);
 // 執業年數：2013 年開始執業，build 時自動計算（配合每日自動重建，跨年後第一次重建即 +1）
 const years = new Date().getFullYear() - 2013;
 const services = [

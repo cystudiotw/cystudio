@@ -1,9 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { getPosts, clean, excerptOf, routeSlug } from '../../lib/wordpress.js';
+import { getPosts, clean, excerptOf, routeSlug, tryOr } from '../../lib/wordpress.js';
 import { collectionSchema, breadcrumbSchema, siteUrl } from '../../lib/schema.js';
-let posts = [];
-try { posts = await getPosts(); } catch (error) { console.warn(error.message); }
+const posts = await tryOr(getPosts(), []);
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const description = '雲橙工作室部落格：WordPress、WooCommerce、客製系統開發、網站維運與 SEO／AEO 優化的實戰經驗分享。';
 ---

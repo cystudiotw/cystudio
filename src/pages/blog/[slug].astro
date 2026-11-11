@@ -1,9 +1,9 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { getPosts, getPost, clean, excerptOf, termsOf, imageOf, routeSlug, webpOf, withWebp } from '../../lib/wordpress.js';
+import { getPosts, getPost, clean, excerptOf, termsOf, imageOf, routeSlug, webpOf, withWebp, tryOr } from '../../lib/wordpress.js';
 import { articleSchema, breadcrumbSchema, siteUrl } from '../../lib/schema.js';
-export async function getStaticPaths(){const posts=await getPosts().catch(()=>[]);return posts.map(post=>({params:{slug:routeSlug(post.slug)},props:{post}}));}
-const { slug }=Astro.params; const post=Astro.props.post || await getPost(slug).catch(()=>null);
+export async function getStaticPaths(){const posts=await tryOr(getPosts(), []);return posts.map(post=>({params:{slug:routeSlug(post.slug)},props:{post}}));}
+const { slug }=Astro.params; const post=Astro.props.post || await tryOr(getPost(slug), null);
 if (!post) return Astro.redirect('/404/');
 const cats=termsOf(post,'category');
 const title=clean(post.title?.rendered);

@@ -1,10 +1,10 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProjectArchive from '../../components/ProjectArchive.astro';
-import { getProjects, getCatalogues, routeSlug } from '../../lib/wordpress.js';
+import { getProjects, getCatalogues, routeSlug, tryOr } from '../../lib/wordpress.js';
 import { collectionSchema, breadcrumbSchema, siteUrl } from '../../lib/schema.js';
-const projects = await getProjects().catch(() => []);
-const catalogues = await getCatalogues().catch(() => []);
+const projects = await tryOr(getProjects(), []);
+const catalogues = await tryOr(getCatalogues(), []);
 const pageUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const description = `瀏覽雲橙工作室的 ${projects.length} 個作品案例：WordPress、WooCommerce、Laravel 官網、購物網站與客製系統開發實績。`;
 ---

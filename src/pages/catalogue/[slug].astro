@@ -1,10 +1,10 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProjectArchive from '../../components/ProjectArchive.astro';
-import { getCatalogues, getProjects, termsOf, clean, routeSlug } from '../../lib/wordpress.js';
+import { getCatalogues, getProjects, termsOf, clean, routeSlug, tryOr } from '../../lib/wordpress.js';
 import { collectionSchema, breadcrumbSchema, siteUrl } from '../../lib/schema.js';
-export async function getStaticPaths(){const terms=await getCatalogues().catch(()=>[]);return terms.map(term=>({params:{slug:routeSlug(term.slug)},props:{term}}));}
-const {term}=Astro.props;const catalogues=await getCatalogues().catch(()=>[]);const projects=(await getProjects().catch(()=>[])).filter(project=>termsOf(project,'catalogue').some(item=>item.id===term.id));
+export async function getStaticPaths(){const terms=await tryOr(getCatalogues(), []);return terms.map(term=>({params:{slug:routeSlug(term.slug)},props:{term}}));}
+const {term}=Astro.props;const catalogues=await tryOr(getCatalogues(), []);const projects=(await tryOr(getProjects(), [])).filter(project=>termsOf(project,'catalogue').some(item=>item.id===term.id));
 const pageUrl=new URL(Astro.url.pathname, Astro.site).toString();
 const description=`${term.name}作品案例（${projects.length} 件）：${projects.slice(0,5).map((project)=>clean(project.title?.rendered)).join('、')}等的網站設計與系統開發實績。`;
 ---
