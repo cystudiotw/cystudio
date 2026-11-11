@@ -37,12 +37,14 @@ const services = [
 .service-grid .service-icon-box{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:9px;background:#f49d15}
 .service-grid .service-card:not(:first-child) .service-icon-box .service-icon{display:block;box-sizing:border-box;width:24px;height:24px;padding:0;margin:0;background:transparent;filter:brightness(0) invert(1)}
 .service-grid .service-card:first-child .service-logo{width:auto;height:48px;max-width:100%;object-fit:contain}
-.projects .project-grid{width:100vw;max-width:none;margin-left:calc((100% - 100vw)/2)}
+/* 作品格全寬化：.projects 左右 padding 歸零（縮排改掛標題/標籤），作品格直接左右 10px，不受捲軸寬度影響 */
+.projects{padding-left:0;padding-right:0}
+.projects .section-title,.projects .project-tags{margin-left:max(calc((100vw - 1180px) / 2), 6%);margin-right:max(calc((100vw - 1180px) / 2), 6%)}
+.projects .project-grid{margin:0 10px}
 .projects .project-grid .project-card>img{display:block;width:100%;max-width:none;height:100%;margin:0;padding:0;object-fit:cover}
 .about .about-copy{position:relative;z-index:1}
 .about .stats{position:relative;z-index:2;margin-left:-85px;margin-right:25px;transform:translate(55px,60px)}
 @media(max-width:767px){.about .stats{margin:0;transform:none}}
-.projects .project-grid{padding:0 10px;box-sizing:border-box}
 .projects .project-grid .project-card{border-radius:10px;overflow:hidden}
 .about .stat .suffix{font-size:15px;color:#f49d15}.about .stats .stat{grid-template-columns:max-content max-content;column-gap:5px}
 .about .about-copy{padding-right:90px}
@@ -50,5 +52,5 @@ const services = [
 .about .stats .stat{grid-template-columns:minmax(0,1fr);min-width:0}
 .about .stat-value{grid-column:1/-1;display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap}
 .about .stat-title,.about .stat p{grid-column:1/-1;min-width:0;overflow-wrap:anywhere}
-@media(max-width:1024px){.about .about-copy{padding-right:60px}.about .stats{margin-left:-45px;margin-right:0;padding:30px;transform:translate(25px,40px)}}
+@media(max-width:1024px){.about .about-copy{padding-right:60px}.about .stats{margin-left:-55px;margin-right:0;padding:30px;transform:translateY(40px)}}
 @media(max-width:767px){.about .about-copy{padding:30px}.about .stats{margin:0;padding:24px;transform:none}}</style>
