@@ -14,7 +14,7 @@ npm run preview    # 本機預覽 dist/ 正式產出
 ## 更新文章 / 作品（不用改任何程式碼）
 
 1. WordPress 後台發佈文章（建議設定：分類、特色圖、excerpt）
-2. **發文後會自動觸發重建**（WP 端 mu-plugin → GitHub `repository_dispatch`，設定見 `docs/wordpress-rebuild.md`）
+2. **發文後 1 小時自動重建**（WP 端 mu-plugin → GitHub `repository_dispatch`，設定見 `docs/wordpress-rebuild.md`；想立刻上線按「工具 → 重建前端網站」）
 3. 也可以手動：WP 後台 **工具 → 重建前端網站** → 「立即重建前端」
 4. 或 GitHub → **Actions** → **Deploy to GitHub Pages** → **Run workflow**
 5. 等 1–2 分鐘自動上站，部署完成後會**自動清除 Cloudflare 快取**

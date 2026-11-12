@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: CY Studio — 發文自動重建前端
- * Description: WordPress 發佈／更新／刪除文章或作品後，自動觸發 GitHub Actions 重新建置 cystudio.tw；並在「工具 → 重建前端網站」提供手動重建按鈕。
- * Version: 1.0.0
+ * Description: WordPress 發佈／更新／刪除文章或作品後，排程 1 小時後觸發 GitHub Actions 重新建置 cystudio.tw；並在「工具 → 重建前端網站」提供手動立即重建按鈕。
+ * Version: 1.1.0
  * Author: 雲橙工作室
  *
  * 安裝方式：
@@ -86,7 +86,42 @@ function cystudio_dispatch_rebuild($source = 'auto') {
 }
 
 /**
- * 發佈／更新已發佈的文章或作品時自動重建（每 60 秒最多觸發一次，避免批次編輯連發）。
+ * 重建延遲秒數（預設 1 小時）。
+ * 可在 wp-config.php 覆寫，例如 30 分鐘：define('CYSTUDIO_REBUILD_DELAY', 1800);
+ */
+function cystudio_rebuild_delay() {
+    $delay = defined('CYSTUDIO_REBUILD_DELAY') ? (int) CYSTUDIO_REBUILD_DELAY : HOUR_IN_SECONDS;
+    return max(0, $delay);
+}
+
+/**
+ * 排程一次重建：1 小時後執行；這期間的多次修改會合併成同一次重建。
+ * 已經有排程就不重複排（避免每改一次就重建一次）。
+ */
+function cystudio_schedule_rebuild() {
+    if (wp_next_scheduled('cystudio_rebuild_event')) {
+        return;
+    }
+
+    $delay = cystudio_rebuild_delay();
+    if ($delay <= 0) {
+        cystudio_dispatch_rebuild('auto');
+        return;
+    }
+
+    wp_schedule_single_event(time() + $delay, 'cystudio_rebuild_event');
+}
+
+/**
+ * 排程時間到：實際觸發 GitHub 重建。
+ */
+function cystudio_run_scheduled_rebuild() {
+    cystudio_dispatch_rebuild('scheduled');
+}
+add_action('cystudio_rebuild_event', 'cystudio_run_scheduled_rebuild');
+
+/**
+ * 發佈／更新已發佈的文章或作品時，排程 1 小時後重建。
  */
 function cystudio_maybe_dispatch_on_save($post_id, $post, $update) {
     if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
@@ -100,17 +135,13 @@ function cystudio_maybe_dispatch_on_save($post_id, $post, $update) {
     if (!in_array($post->post_type, $types, true)) {
         return;
     }
-    if (get_transient('cystudio_rebuild_lock')) {
-        return;
-    }
 
-    set_transient('cystudio_rebuild_lock', 1, MINUTE_IN_SECONDS);
-    cystudio_dispatch_rebuild('auto');
+    cystudio_schedule_rebuild();
 }
 add_action('save_post', 'cystudio_maybe_dispatch_on_save', 10, 3);
 
 /**
- * 刪除已發佈的文章或作品時也重建（避免前台留著已刪除的頁面）。
+ * 刪除已發佈的文章或作品時也排程重建（避免前台留著已刪除的頁面）。
  */
 function cystudio_maybe_dispatch_on_delete($post_id) {
     $post = get_post($post_id);
@@ -122,17 +153,13 @@ function cystudio_maybe_dispatch_on_delete($post_id) {
     if (!in_array($post->post_type, $types, true)) {
         return;
     }
-    if (get_transient('cystudio_rebuild_lock')) {
-        return;
-    }
 
-    set_transient('cystudio_rebuild_lock', 1, MINUTE_IN_SECONDS);
-    cystudio_dispatch_rebuild('auto');
+    cystudio_schedule_rebuild();
 }
 add_action('before_delete_post', 'cystudio_maybe_dispatch_on_delete');
 
 /**
- * 手動重建：admin-post 端點。
+ * 手動重建：admin-post 端點（立即執行，並取消等待中的排程）。
  */
 function cystudio_handle_manual_rebuild() {
     if (!current_user_can('manage_options')) {
@@ -140,8 +167,8 @@ function cystudio_handle_manual_rebuild() {
     }
     check_admin_referer('cystudio_rebuild');
 
+    wp_clear_scheduled_hook('cystudio_rebuild_event');
     $result = cystudio_dispatch_rebuild('manual');
-    delete_transient('cystudio_rebuild_lock');
 
     $args = is_wp_error($result)
         ? [
@@ -175,8 +202,18 @@ add_action('admin_menu', 'cystudio_register_admin_page');
 function cystudio_render_admin_page() {
     $configured = (bool) cystudio_github_config();
     $last       = get_option('cystudio_last_rebuild');
+    $scheduled  = wp_next_scheduled('cystudio_rebuild_event');
+    $delay      = cystudio_rebuild_delay();
+    $delay_text = $delay >= HOUR_IN_SECONDS && 0 === $delay % HOUR_IN_SECONDS
+        ? ($delay / HOUR_IN_SECONDS) . ' 小時'
+        : round($delay / MINUTE_IN_SECONDS) . ' 分鐘';
     $notice     = isset($_GET['cystudio_notice']) ? sanitize_key(wp_unslash($_GET['cystudio_notice'])) : '';
     $message    = isset($_GET['cystudio_msg']) ? sanitize_text_field(rawurldecode(wp_unslash($_GET['cystudio_msg']))) : '';
+    $sources    = [
+        'manual'    => '手動',
+        'scheduled' => '排程自動',
+        'auto'      => '發文自動',
+    ];
     ?>
     <div class="wrap">
         <h1>重建前端網站</h1>
@@ -197,7 +234,7 @@ function cystudio_render_admin_page() {
             </div>
         <?php endif; ?>
 
-        <p>WordPress 發佈或更新文章／作品時會自動觸發重建（每 60 秒最多一次）。你也可以在這裡手動觸發。</p>
+        <p>WordPress 發佈、更新或刪除文章／作品後，會排程在 <strong><?php echo esc_html($delay_text); ?></strong>後自動重建；這段期間的多次修改會合併成一次。你也可以在這裡立即重建。</p>
 
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <?php wp_nonce_field('cystudio_rebuild'); ?>
@@ -205,10 +242,17 @@ function cystudio_render_admin_page() {
             <?php submit_button('立即重建前端', 'primary', 'submit', false, $configured ? [] : ['disabled' => 'disabled']); ?>
         </form>
 
+        <?php if ($scheduled) : ?>
+            <p style="margin-top:16px;color:#646970;">
+                已排程自動重建：<?php echo esc_html(wp_date('Y-m-d H:i:s', $scheduled)); ?>
+                （按上方按鈕可立即重建並取消排程）
+            </p>
+        <?php endif; ?>
+
         <?php if ($last && !empty($last['time'])) : ?>
             <p style="margin-top:16px;color:#646970;">
                 上次觸發：<?php echo esc_html(wp_date('Y-m-d H:i:s', $last['time'])); ?>
-                （<?php echo esc_html('manual' === ($last['source'] ?? '') ? '手動' : '發文自動'); ?>）
+                （<?php echo esc_html($sources[$last['source'] ?? ''] ?? '自動'); ?>）
             </p>
         <?php endif; ?>
     </div>
