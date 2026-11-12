@@ -14,14 +14,18 @@ npm run preview    # 本機預覽 dist/ 正式產出
 ## 更新文章 / 作品（不用改任何程式碼）
 
 1. WordPress 後台發佈文章（建議設定：分類、特色圖、excerpt）
-2. GitHub → **Actions** → **Deploy to GitHub Pages** → **Run workflow**
-3. 等 1–2 分鐘自動上站
+2. **發文後會自動觸發重建**（WP 端 mu-plugin → GitHub `repository_dispatch`，設定見 `docs/wordpress-rebuild.md`）
+3. 也可以手動：WP 後台 **工具 → 重建前端網站** → 「立即重建前端」
+4. 或 GitHub → **Actions** → **Deploy to GitHub Pages** → **Run workflow**
+5. 等 1–2 分鐘自動上站，部署完成後會**自動清除 Cloudflare 快取**
 
 也可以什麼都不按：**每天台灣時間 09:00 會自動重建**，抓取 WP 最新內容。
 
 ## 部署結構
 
 - `push 到 main` → 自動 build + 部署
+- WP 發文 → `repository_dispatch`（`wp-update`）→ 自動 build + 部署
+- 部署成功 → `scripts/purge-cloudflare.mjs` 只清 `cystudio.tw` / `www.cystudio.tw` 的 Cloudflare 快取（purge by hostname，不動同 zone 其他 custom hostname；需 repo secrets `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ZONE_ID`）
 - `public/CNAME` = `cystudio.tw`（GitHub Pages 自訂網域）
 - 環境變數 `WP_URL`：WP API 位址。DNS 把 cystudio.tw 切到 GitHub Pages 之後，WP 搬家到新位址（如 `wp.cystudio.tw`）時，在 repo **Settings → Secrets and variables → Actions → Variables** 新增 `WP_URL` 即可，程式不用改。
 

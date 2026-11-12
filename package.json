@@ -8,7 +8,8 @@
     "webp": "node scripts/generate-webp.mjs",
     "og": "node scripts/generate-og.mjs",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "purge": "node scripts/purge-cloudflare.mjs"
   },
   "dependencies": {
     "astro": "^7.4.7"

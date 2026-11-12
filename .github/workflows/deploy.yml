@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  repository_dispatch:
+    # WordPress 發文／更新後由 mu-plugin 觸發（見 wordpress/cystudio-rebuild.php）
+    types: [wp-update]
   schedule:
     # 每天 UTC 01:00（台灣 09:00）自動重建：抓取 WordPress 最新內容，新文章自動上站
     - cron: '0 1 * * *'
@@ -52,3 +55,16 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Checkout (purge script)
+        uses: actions/checkout@v4
+      - name: Purge Cloudflare cache
+        # 等 GitHub Pages CDN 換上新版本，再清 Cloudflare 快取（HTML 快取一年，不清訪客會看到舊版）
+        # 預設用 purge by hostname，只清 cystudio.tw / www.cystudio.tw，不動同 zone 的其他 custom hostname
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_PURGE_HOSTS: ${{ vars.CLOUDFLARE_PURGE_HOSTS }}
+          CLOUDFLARE_PURGE_MODE: ${{ vars.CLOUDFLARE_PURGE_MODE }}
+        run: |
+          sleep 15
+          node scripts/purge-cloudflare.mjs
